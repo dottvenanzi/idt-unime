@@ -4,7 +4,7 @@
   "use strict";
   var CH = window.CHAPTERS || [], QB = window.QBANK || [], REV = window.REVISION || {};
   var QUIZ_SIZE = 31, PASS = 18;
-  var SC = document.getElementById("scroller"), view = document.getElementById("view"), navSlot = document.getElementById("secnav-slot");
+  var SC = window, view = document.getElementById("view"), navSlot = document.getElementById("secnav-slot");
   var L = ["A", "B", "C", "D"];
   var chByNum = {}; CH.forEach(function (c) { chByNum[c.num] = c; });
 
@@ -252,8 +252,14 @@
           entries.forEach(function (en) {
             if (!en.isIntersecting) return;
             navSlot.querySelectorAll("[data-go]").forEach(function (b) {
-              var on = b.dataset.go === en.target.id; b.classList.toggle("active", on);
-              if (on) b.scrollIntoView({ block: "nearest", inline: "center" });
+              var on = b.dataset.go === en.target.id, was = b.classList.contains("active");
+              b.classList.toggle("active", on);
+              // Scroll only the chip row sideways. scrollIntoView would also move the page
+              // and, on iPhone, stops the user's swipe and jumps back.
+              if (on && !was && b.parentNode) {
+                var row = b.parentNode;
+                row.scrollLeft = Math.max(0, b.offsetLeft - (row.clientWidth - b.offsetWidth) / 2);
+              }
             });
           });
         }, { rootMargin: "-130px 0px -65% 0px" });
